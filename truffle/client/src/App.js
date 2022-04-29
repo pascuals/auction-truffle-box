@@ -13,12 +13,20 @@ class App extends Component {
       const web3 = await getWeb3();
 
       // Use web3 to get the user's accounts.
+      // Prompt the login
       const accounts = await web3.eth.getAccounts();
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = SimpleStorageContract.networks[networkId];
 
+      if (deployedNetwork == undefined) {
+        // alert("Por favor, conectate a Ganache para continuar utilizando la aplicacion");
+        this.setState({ web3, accounts, networkId })
+        return;
+      }
+
+      // Create the Smart Contract instance
       const instance = new web3.eth.Contract(
         SimpleStorageContract.abi,
         deployedNetwork && deployedNetwork.address,
@@ -26,7 +34,7 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.runExample);
+      this.setState({ web3, accounts, networkId, contract: instance });
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -36,11 +44,35 @@ class App extends Component {
     }
   };
 
+  handleMetamaskEvent = async () => {
+    window.ethereum.on('accountsChanged', function (accounts) {
+      // Time to reload your interface with accounts[0]!
+      alert("Incoming event from Metamask: Account changed")
+      window.location.reload()
+    })
+
+    window.ethereum.on('networkChanged', function (networkId) {
+      // Time to reload your interface with the new networkId
+      alert("Incoming event from Metamask: Network changed")
+      window.location.reload()
+    })
+  }
+
+  handleContractEvent = async () => {
+
+
+  }
+
+  componentDidUpdate() {
+    this.handleMetamaskEvent()
+    this.handleContractEvent()
+  }
+
   runExample = async () => {
     const { accounts, contract } = this.state;
 
     // Stores a given value, 5 by default.
-    await contract.methods.set(5).send({ from: accounts[0] });
+    await contract.methods.set(this.state.value).send({ from: accounts[0] });
 
     // Get the value from the contract to prove it worked.
     const response = await contract.methods.get().call();
@@ -49,7 +81,11 @@ class App extends Component {
     this.setState({ storageValue: response });
   };
 
+
+
+
   render() {
+    console.log(this.state.web3)
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
@@ -57,6 +93,10 @@ class App extends Component {
       <div className="App">
         <h1>Good to Go!</h1>
         <p>Your Truffle Box is installed and ready.</p>
+
+        <p> Your Account: {this.state.accounts[0]}</p>
+        <p> Network connected: {this.state.networkId}</p>
+
         <h2>Smart Contract Example</h2>
         <p>
           If your contracts compiled and migrated successfully, below will show
@@ -66,7 +106,12 @@ class App extends Component {
           Try changing the value stored on <strong>line 42</strong> of App.js.
         </p>
         <div>The stored value is: {this.state.storageValue}</div>
-      </div>
+
+        <br />
+        <input placeholder="Insert a number" onChange={(e) => this.setState({ value: e.target.value })}></input>
+        <button onClick={this.runExample}>Update value</button>
+
+      </div >
     );
   }
 }
