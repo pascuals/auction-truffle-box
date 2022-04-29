@@ -9,6 +9,15 @@ module.exports = {
       host: "127.0.0.1",
       port: 7545,
       network_id: "*" // Match any network id,
-    }
+    },
+    production: {
+      host: "...",
+      port: "",
+      network_id: "4"
+    },
+  },
+  plugins: ['truffle-plugin-verify'],
+  api_keys: {
+    etherscan: 'MY_API_KEY'
   }
 };

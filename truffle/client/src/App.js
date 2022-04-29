@@ -44,6 +44,11 @@ class App extends Component {
     }
   };
 
+  componentDidUpdate() {
+    this.handleMetamaskEvent()
+    this.handleContractEvent()
+  }
+
   // --------- METAMASK EVENTS ---------
   handleMetamaskEvent = async () => {
     window.ethereum.on('accountsChanged', function (accounts) {
@@ -104,11 +109,9 @@ class App extends Component {
     // this.state.contract.once("Status",function(error, event){ console.log(event); });
   }
 
-  componentDidUpdate() {
-    this.handleMetamaskEvent()
-    this.handleContractEvent()
-  }
 
+
+  // BID FUNCTION
   bid = async () => {
     const { accounts, contract } = this.state;
 
@@ -124,6 +127,7 @@ class App extends Component {
     this.setState({ isActive: isActive, highestPrice, highestBidder });
   };
 
+  // STOP AUCTION FUNCTION
   stopAuction = async () => {
     const { accounts, contract } = this.state;
 
@@ -138,6 +142,7 @@ class App extends Component {
     this.setState({ isActive, newOwner });
   }
 
+  // GET AUCTION INFORMATION FUNCTION
   getAuctionInformation = async () => {
     const { accounts, contract } = this.state;
 
@@ -157,6 +162,22 @@ class App extends Component {
   }
 
 
+  // ------- SIGN WITH METAMASK ------
+  signMessage = async () => {
+    const { accounts, web3 } = this.state;
+    var signature = await web3.eth.personal.sign("Bid 20 Ether", accounts[0])
+    console.log("The signature is: " + signature);
+    this.setState({ signature });
+    // this.recoverSigner();
+  }
+
+  // ------- RECOVER SIGNER ADDRES ------
+  recoverSigner = async () => {
+    const { accounts, web3 } = this.state;
+    var signer = await this.state.web3.eth.personal.ecRecover("Bid 20 Ether", this.state.signature)
+    console.log(signer)
+    this.setState({ signer })
+  }
 
   render() {
 
@@ -165,29 +186,31 @@ class App extends Component {
     }
     return (
       <div className="App">
-        <h1>Welcome to AuctionUEM!</h1>
+        <h1>Welcome to the auction,</h1>
 
         {/* Context Information: Account & Network */}
         <div className="Context-information">
           <p> Your address: {this.state.accounts[0]}</p>
           <p> Network connected: {this.state.networkId}</p>
+          {this.state.networkId !== 1337 && <p id="inline">This DAPP is currently working on GANACHE, please press the button</p>}
           {this.state.networkId !== 1337 && <button onClick={this.switchNetwork}>Switch to Ganache</button>}
         </div>
 
         {/* Auction information */}
-        <h2>Auction information</h2>
-        <button id="button-call" onClick={this.getAuctionInformation}> Get auction information</button>
-        {this.state.auctionInfo &&
+        <h2 id="inline">Auction information</h2>
+        <button id="button-call" onClick={this.getAuctionInformation}> GET AUCTION INFO</button>
+        {
+          this.state.auctionInfo &&
           <div className="Auction-information">
             <div className="Auction-information-img">
               {/* Auction Image */}
               <img src="https://bafybeifzm6xqduwgl6lwjyabj2v5qwduwqgotr6hjj5cu632ldtu6zbw4a.ipfs.nftstorage.link/"></img>
 
               {/* Auction Description */}
-              <p>{this.state.auctionInfo[0]}</p>
+              <h3>{this.state.auctionInfo[0]}</h3>
 
               {/* Auction Status */}
-              {this.state.isActive ? <p><b>The auction is active!! </b>🤩 🤩</p> : <p><b>The auction is not longer active </b>😭 😭</p>}
+              {this.state.isActive ? <p>The auction is still active!! 🤩 🤩</p> : <p><b>The auction is not longer active </b>😭 😭</p>}
             </div>
 
             <div className="Auction-information-text">
@@ -210,17 +233,25 @@ class App extends Component {
         <div className="Auction-actions">
           {/* Input & Button to bid */}
           <input placeholder="Insert value in wei" onChange={(e) => this.setState({ value: e.target.value })}></input>
-          <button id="button-send" onClick={this.bid}>Bid</button>
+          <button id="button-send" onClick={this.bid}>BID</button>
 
           {/* Button to stop auction */}
-          <button id="button-send" onClick={this.stopAuction}>Stop Auction</button>
+          <button id="button-send" onClick={this.stopAuction}>STOP AUCTION</button>
 
           {/* Helper to convert wei to ether */}
           {this.state.value && <p>You're gonna bid: {this.state.web3.utils.fromWei(this.state.value, 'ether')} ether</p>}
         </div>
 
-
         <br /><br /><br /><br />
+
+        {/* Button to sign a message (i.e. sign the bid) */}
+        <button onClick={this.signMessage}>SIGN MESSAGE</button>
+        <div style={{ overflowWrap: "anywhere" }}>
+          {this.state.signature && <p>Signed message: {this.state.signature}</p>}
+          {this.state.signer && <p>Signer address: {this.state.signer}</p>}
+        </div>
+        <br /><br /><br /><br />
+
       </div >
     );
   }

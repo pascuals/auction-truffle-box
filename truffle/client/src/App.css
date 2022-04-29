@@ -5,8 +5,16 @@
 }
 
 h1 {
-  font-family: 'IBM Plex Sans';
-  font-size: 60px;
+  font-family: 'Cabin Sketch', cursive;
+  font-size: 70px;
+  margin-bottom: 20px;
+  font-weight: 100;
+}
+
+h2 {
+  font-family: 'Cabin Sketch';
+  font-size: 40px;
+  font-weight: 500;
 }
 
 .App-logo {
@@ -28,6 +36,12 @@ h1 {
   color: #09d3ac;
 }
 
+.Context-information {
+  line-height: 10px;
+  margin-bottom: 50px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid grey;
+}
 
 .Auction-information {
   width: 100%;
@@ -53,7 +67,7 @@ h1 {
 }
 
 button {
-  padding: 5px;
+  padding: 8px;
   width: 20%;
   max-width: 250px;
   cursor: pointer;
@@ -71,10 +85,24 @@ button {
   border-color: #264459;
 }
 
+#button-call:focus {
+  box-shadow: 0 0 0 0.2rem rgb(83 119 145 / 50%);
+}
+
 #button-send {
-  background-color: #9c3636;
+  background-color: #b84040;
   color: white;
   margin-left: 2px;
+}
+
+#button-send:hover {
+  color: #fff;
+  background-color: #9c3636;
+  border-color: #923333;
+}
+
+#button-send:focus, #button-send:active {
+  box-shadow: 0 0 0 0.2rem rgb(195 93 93 / 50%);
 }
 
 .Auction-actions {
@@ -84,12 +112,13 @@ button {
 
 .Auction-actions input {
   width: 60%;
-  padding: 5px;
+  padding: 8px;
   max-width: 400px;
   text-align: center;
+  font-size: 15px;
 }
 
-.Auction-actions button {
-  padding: 5px;
-  width: 20%;
+#inline {
+  display: inline;
+  margin-right: 30px;
 }
