@@ -1,5 +1,12 @@
 .App {
-  text-align: center;
+  width: 80%;
+  margin: auto;
+  text-align: left;
+}
+
+h1 {
+  font-family: 'IBM Plex Sans';
+  font-size: 60px;
 }
 
 .App-logo {
@@ -19,4 +26,70 @@
 
 .App-link {
   color: #09d3ac;
+}
+
+
+.Auction-information {
+  width: 100%;
+  margin: auto;
+  margin-top: 20px;
+  text-align: left;
+  display: flex;
+  flex-direction: row;
+  overflow-wrap: anywhere;
+}
+
+.Auction-information-img {
+  flex: 2;
+}
+
+.Auction-information-img img {
+  width: 400px;
+}
+
+.Auction-information-text {
+  flex: 3;
+  margin-left: 10px;
+}
+
+button {
+  padding: 5px;
+  width: 20%;
+  max-width: 250px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+#button-call {
+  background-color: #365f7c;
+  color: white;
+}
+
+#button-call:hover {
+  color: #fff;
+  background-color: #2a4b62;
+  border-color: #264459;
+}
+
+#button-send {
+  background-color: #9c3636;
+  color: white;
+  margin-left: 2px;
+}
+
+.Auction-actions {
+  width: 100%;
+  margin: auto;
+}
+
+.Auction-actions input {
+  width: 60%;
+  padding: 5px;
+  max-width: 400px;
+  text-align: center;
+}
+
+.Auction-actions button {
+  padding: 5px;
+  width: 20%;
 }

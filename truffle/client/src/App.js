@@ -1,8 +1,11 @@
 import React, { Component } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
+import "./App.css";
+import Auction from "./contracts/Auction.json";
 import getWeb3 from "./getWeb3";
 
-import "./App.css";
+
+const CONTRACT_ADDRESS = "0x859fEb36209D31CcdfF0e6a662f28c4c96cEBd25"
+const CONTRACT_ABI = require("./contracts/Auction.json").abi
 
 class App extends Component {
   state = { storageValue: 0, web3: null, accounts: null, contract: null };
@@ -13,13 +16,13 @@ class App extends Component {
       const web3 = await getWeb3();
 
       // Use web3 to get the user's accounts.
-      // Prompt the login
       const accounts = await web3.eth.getAccounts();
 
-      // Get the contract instance.
+      // Get the network ID
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorageContract.networks[networkId];
+      const deployedNetwork = Auction.networks[networkId];
 
+      // Check if the Smart Contract is deployed on Network with ID: XY
       if (deployedNetwork == undefined) {
         // alert("Por favor, conectate a Ganache para continuar utilizando la aplicacion");
         this.setState({ web3, accounts, networkId })
@@ -27,10 +30,7 @@ class App extends Component {
       }
 
       // Create the Smart Contract instance
-      const instance = new web3.eth.Contract(
-        SimpleStorageContract.abi,
-        deployedNetwork && deployedNetwork.address,
-      );
+      const instance = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -44,6 +44,7 @@ class App extends Component {
     }
   };
 
+  // --------- METAMASK EVENTS ---------
   handleMetamaskEvent = async () => {
     window.ethereum.on('accountsChanged', function (accounts) {
       // Time to reload your interface with accounts[0]!
@@ -58,9 +59,49 @@ class App extends Component {
     })
   }
 
+  switchNetwork = async () => {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [
+          {
+            chainId: this.state.web3.utils.toHex(137)
+          }
+        ]
+      });
+    } catch (switchError) {
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: this.state.web3.utils.toHex(137),
+                chainName: 'Polygon',
+                rpcUrls: ['https://polygon-rpc.com'] /* ... */,
+              },
+            ],
+          });
+        } catch (addError) {
+          console.log(addError)
+        }
+      }
+    }
+  }
+
+  // --------- SMART CONTRACT EVENTS ---------
   handleContractEvent = async () => {
-
-
+    if (!this.state.contract) return
+    this.state.contract.events.Status([])
+      .on("connected", function (subscriptionId) {
+        console.log("New subscription with ID: " + subscriptionId)
+      })
+      .on('data', function (event) {
+        console.log("New event:")
+        console.log(event)
+        alert("New Highest BID 🤑 💰 💸")
+      })
+    // this.state.contract.once("Status",function(error, event){ console.log(event); });
   }
 
   componentDidUpdate() {
@@ -68,49 +109,118 @@ class App extends Component {
     this.handleContractEvent()
   }
 
-  runExample = async () => {
+  bid = async () => {
     const { accounts, contract } = this.state;
 
-    // Stores a given value, 5 by default.
-    await contract.methods.set(this.state.value).send({ from: accounts[0] });
+    // Bid at an auction for X value
+    await contract.methods.bid().send({ from: accounts[0], value: this.state.value });
 
-    // Get the value from the contract to prove it worked.
-    const response = await contract.methods.get().call();
+    // Get the new values: highest price and bidder, and the status of the auction
+    const highestPrice = await contract.methods.getHighestPrice().call();
+    const highestBidder = await contract.methods.getHighestBidder().call();
+    const isActive = await contract.methods.isActive().call();
 
     // Update state with the result.
-    this.setState({ storageValue: response });
+    this.setState({ isActive: isActive, highestPrice, highestBidder });
   };
 
+  stopAuction = async () => {
+    const { accounts, contract } = this.state;
+
+    // Stop the auction
+    await contract.methods.stopAuction().send({ from: accounts[0] });
+
+    // Get the new values: isActive and newOwner
+    const isActive = await contract.methods.isActive().call();
+    const newOwner = await contract.methods.newOwner().call();
+
+    // Update state with the result.
+    this.setState({ isActive, newOwner });
+  }
+
+  getAuctionInformation = async () => {
+    const { accounts, contract } = this.state;
+
+    // Get the auction information
+    const response = await contract.methods.getAuctionInfo().call({ from: accounts[0] });
+    this.setState({ auctionInfo: response })
+
+    // Get the highest price and bidder, and the status of the auction
+    const highestPrice = await contract.methods.getHighestPrice().call();
+    const highestBidder = await contract.methods.getHighestBidder().call();
+    const basePrice = await contract.methods.getBasePrice().call();
+    const originalOwner = await contract.methods.originalOwner().call();
+    const newOwner = await contract.methods.newOwner().call();
+    const isActive = await contract.methods.isActive().call();
+    console.log(isActive)
+    this.setState({ highestPrice, highestBidder, basePrice, originalOwner, newOwner, isActive })
+  }
 
 
 
   render() {
-    console.log(this.state.web3)
+
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
       <div className="App">
-        <h1>Good to Go!</h1>
-        <p>Your Truffle Box is installed and ready.</p>
+        <h1>Welcome to AuctionUEM!</h1>
 
-        <p> Your Account: {this.state.accounts[0]}</p>
-        <p> Network connected: {this.state.networkId}</p>
+        {/* Context Information: Account & Network */}
+        <div className="Context-information">
+          <p> Your address: {this.state.accounts[0]}</p>
+          <p> Network connected: {this.state.networkId}</p>
+          {this.state.networkId !== 1337 && <button onClick={this.switchNetwork}>Switch to Ganache</button>}
+        </div>
 
-        <h2>Smart Contract Example</h2>
-        <p>
-          If your contracts compiled and migrated successfully, below will show
-          a stored value of 5 (by default).
-        </p>
-        <p>
-          Try changing the value stored on <strong>line 42</strong> of App.js.
-        </p>
-        <div>The stored value is: {this.state.storageValue}</div>
+        {/* Auction information */}
+        <h2>Auction information</h2>
+        <button id="button-call" onClick={this.getAuctionInformation}> Get auction information</button>
+        {this.state.auctionInfo &&
+          <div className="Auction-information">
+            <div className="Auction-information-img">
+              {/* Auction Image */}
+              <img src="https://bafybeifzm6xqduwgl6lwjyabj2v5qwduwqgotr6hjj5cu632ldtu6zbw4a.ipfs.nftstorage.link/"></img>
 
-        <br />
-        <input placeholder="Insert a number" onChange={(e) => this.setState({ value: e.target.value })}></input>
-        <button onClick={this.runExample}>Update value</button>
+              {/* Auction Description */}
+              <p>{this.state.auctionInfo[0]}</p>
 
+              {/* Auction Status */}
+              {this.state.isActive ? <p><b>The auction is active!! </b>🤩 🤩</p> : <p><b>The auction is not longer active </b>😭 😭</p>}
+            </div>
+
+            <div className="Auction-information-text">
+              {/* Basic Information */}
+              <p><b>Created at:</b> {this.state.auctionInfo[1]}</p>
+              <p><b>Duration:</b> {this.state.auctionInfo[2]}</p>
+
+              {/* More information */}
+              {this.state.highestBidder && <p><b>Highest Bidder:</b> {this.state.highestBidder}</p>}
+              {this.state.highestPrice && <p><b>Highest Price:</b> {this.state.highestPrice} = {this.state.web3.utils.fromWei(this.state.highestPrice, 'ether')} ether</p>}
+              {this.state.basePrice && <p><b>Base price:</b> {this.state.basePrice}</p>}
+              {this.state.originalOwner && <p><b>Original Owner:</b> {this.state.originalOwner}</p>}
+              {this.state.newOwner && <p><b>New Owner:</b> {this.state.newOwner}</p>}
+            </div>
+          </div>
+        }
+
+        {/* Auction actions */}
+        <h2>Auction actions</h2>
+        <div className="Auction-actions">
+          {/* Input & Button to bid */}
+          <input placeholder="Insert value in wei" onChange={(e) => this.setState({ value: e.target.value })}></input>
+          <button id="button-send" onClick={this.bid}>Bid</button>
+
+          {/* Button to stop auction */}
+          <button id="button-send" onClick={this.stopAuction}>Stop Auction</button>
+
+          {/* Helper to convert wei to ether */}
+          {this.state.value && <p>You're gonna bid: {this.state.web3.utils.fromWei(this.state.value, 'ether')} ether</p>}
+        </div>
+
+
+        <br /><br /><br /><br />
       </div >
     );
   }
