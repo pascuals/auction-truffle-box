@@ -1,0 +1,16 @@
+{
+  "ignore": [
+		".github", ".gitattributes"
+  ],
+	"commands": {
+		"Compile contracts": "truffle compile",
+		"Migrate contracts": "truffle migrate",
+		"Test contracts": "truffle test",
+		"Execute script for contracts": "truffle exec scripts/bid.js",
+		"Run react dev server": "cd client && npm run start",
+		"Build app for production": "cd client && npm run build"
+	},
+	"hooks": {
+		"post-unpack": "cd client && npm ci --legacy-deps"
+	}
+}

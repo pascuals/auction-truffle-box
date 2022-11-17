@@ -4,7 +4,7 @@ import Auction from "./contracts/Auction.json";
 import getWeb3 from "./getWeb3";
 
 
-const CONTRACT_ADDRESS = "0x859fEb36209D31CcdfF0e6a662f28c4c96cEBd25"
+const CONTRACT_ADDRESS = "0x477F237f7B047a38699612C26C974c82E882013C"
 const CONTRACT_ABI = require("./contracts/Auction.json").abi
 
 class App extends Component {

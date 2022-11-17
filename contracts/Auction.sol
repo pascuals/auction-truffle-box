@@ -1,7 +1,7 @@
 // Version de solidity del Smart Contract
 // SPDX-License-Identifier: UNLICENSED
 
-pragma solidity >=0.4.22 <0.7.0;
+pragma solidity ^0.8.16;
 
 // Informacion del Smart Contract
 // Nombre: Subasta
@@ -13,7 +13,6 @@ contract Auction {
     // ----------- Variables (datos) -----------
     // Información de la subasta
     string private description;
-    string public imageURI;
     uint private basePrice;
     uint256 private secondsToEnd;
     uint256 private createdTime;
@@ -35,16 +34,15 @@ contract Auction {
 
     // ----------- Constructor -----------
     // Uso: Inicializa el Smart Contract - Auction con: description, precio y tiempo
-    constructor() public {
+    constructor() {
         
         // Inicializo el valor a las variables (datos)
-        description = "Ford Focus ST Sportbreak 2019 - 3499KYZ";
-        imageURI = "ipfs://bafybeifzm6xqduwgl6lwjyabj2v5qwduwqgotr6hjj5cu632ldtu6zbw4a";
+        description = "En esta subasta se ofrece un coche. Se trata de un Ford Focus de ...";
         basePrice = 1 ether;   
-        secondsToEnd = 3600;   // 86400 = 24h | 3600 = 1h | 900 = 15 min | 600 = 10 min
+        secondsToEnd = 600;   // 86400 = 24h | 3600 = 1h | 900 = 15 min | 600 = 10 min
         activeContract = true;
         createdTime = block.timestamp;
-        originalOwner = msg.sender;
+        originalOwner = payable(msg.sender);
         
         // Se emite un Evento
         emit Status("Subasta creada");
@@ -58,14 +56,15 @@ contract Auction {
     //         El dinero es almacenado en el contrato, junto con el nombre del postor
     //         El postor cuya oferta ha sido superada recibe de vuelta el dinero pujado
     function bid() public payable {
-        if(block.timestamp > (createdTime + secondsToEnd)  || activeContract == false){
+        if(block.timestamp > (createdTime + secondsToEnd)  && activeContract == true){
             checkIfAuctionEnded();
         } else {
             if (msg.value > highestPrice && msg.value > basePrice){
                 // Devuelve el dinero al ANTIGUO maximo postor
                 highestBidder.transfer(highestPrice);
+                
                 // Actualiza el nombre y precio al NUEVO maximo postor
-                highestBidder = msg.sender;
+                highestBidder = payable(msg.sender);
                 highestPrice = msg.value;
                 
                 // Se emite un evento
@@ -109,7 +108,9 @@ contract Auction {
         // Finaliza la subasta
         activeContract = false;
         // Devuelve el dinero al maximo postor
-        highestBidder.transfer(address(this).balance);
+        if (highestBidder != address(0x0)){
+            highestBidder.transfer(highestPrice);
+        }
         
         // Se emite un evento
         emit Status("La subasta se ha parado");
