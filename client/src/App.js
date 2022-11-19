@@ -3,9 +3,8 @@ import "./App.css";
 import Auction from "./contracts/Auction.json";
 import getWeb3 from "./getWeb3";
 
-
-const CONTRACT_ADDRESS = "0x477F237f7B047a38699612C26C974c82E882013C"
-const CONTRACT_ABI = require("./contracts/Auction.json").abi
+const CONTRACT_ADDRESS = "0x539A0Ee127680b53366b90C30918579FD08975aB"
+const CONTRACT_ABI = require("@pascuals/testament/build/contracts/Testament.json").abi
 
 class App extends Component {
   state = { storageValue: 0, web3: null, accounts: null, contract: null };
@@ -165,13 +164,13 @@ class App extends Component {
   // ------- SIGN WITH METAMASK ------
   signMessage = async () => {
     const { accounts, web3 } = this.state;
-    var signature = await web3.eth.personal.sign("Bid 20 Ether", accounts[0])
+    const signature = await web3.eth.personal.sign("Bid 20 Ether", accounts[0], null);
     console.log("The signature is: " + signature);
     this.setState({ signature });
     // this.recoverSigner();
   }
 
-  // ------- RECOVER SIGNER ADDRES ------
+  // ------- RECOVER SIGNER ADDRESS ------
   recoverSigner = async () => {
     const { accounts, web3 } = this.state;
     var signer = await this.state.web3.eth.personal.ecRecover("Bid 20 Ether", this.state.signature)
@@ -193,7 +192,7 @@ class App extends Component {
           <p> Your address: {this.state.accounts[0]}</p>
           <p> Network connected: {this.state.networkId}</p>
           {this.state.networkId !== 1337 && <p id="inline">This DAPP is currently working on GANACHE, please press the button</p>}
-          {this.state.networkId !== 1337 && <button onClick={this.switchNetwork}>Switch to Ganache</button>}
+          {this.state.networkId !== 1337 && <button onClick={this.switchNetwork}>Switch to Polygon</button>}
         </div>
 
         {/* Auction information */}
