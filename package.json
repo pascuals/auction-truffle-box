@@ -1,0 +1,6 @@
+{
+  "name": "auction-truffle-box",
+  "scripts": {
+    "bid-script": "truffle exec scripts/bid.js"
+  }
+}
