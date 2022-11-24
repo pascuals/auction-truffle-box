@@ -5,7 +5,7 @@
  * them to suit your project as necessary.
  *
  * More information about configuration can be found at:
- * 
+ *
  * https://trufflesuite.com/docs/truffle/reference/configuration
  *
  * To deploy via Infura you'll need a wallet provider (like @truffle/hdwallet-provider)
@@ -14,15 +14,15 @@
  *
  * You'll also need a mnemonic - the twelve word phrase the wallet uses to generate
  * public/private key pairs. If you're publishing your code to GitHub make sure you load this
- * phrase from a file you've .gitignored so it doesn't accidentally become public.
+ * phrase from a file you've .gitignore, so it doesn't accidentally become public.
  *
  */
 
-// require('dotenv').config();
-// const mnemonic = process.env["MNEMONIC"];
-// const infuraProjectId = process.env["INFURA_PROJECT_ID"];
+require('dotenv').config();
+const mnemonic = process.env["MNEMONIC"];
+const infuraProjectId = process.env["INFURA_PROJECT_ID"];
 
-// const HDWalletProvider = require('@truffle/hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 
 module.exports = {
   /**
@@ -30,7 +30,7 @@ module.exports = {
    * defaults web3 uses to send transactions. If you don't specify one truffle
    * will spin up a development blockchain for you on port 9545 when you
    * run `develop` or `test`. You can ask a truffle command to use a specific
-   * network from the command line, e.g
+   * network from the command line, e.g.
    *
    * $ truffle test --network <network-name>
    */
@@ -40,7 +40,7 @@ module.exports = {
     // Useful for testing. The `development` name is special - truffle uses it by default
     // if it's defined here and no other network is specified at the command line.
     // You should run a client (like ganache, geth, or parity) in a separate terminal
-    // tab if you use this network and you must also set the `host`, `port` and `network_id`
+    // tab if you use this network and must also set the `host`, `port` and `network_id`
     // options below to some value.
     //
     development: {
@@ -61,15 +61,16 @@ module.exports = {
     //
     // Useful for deploying to a public network.
     // Note: It's important to wrap the provider as a function to ensure truffle uses a new provider every time.
-    // goerli: {
-    //   provider: () => new HDWalletProvider(mnemonic, `https://goerli.infura.io/v3/${infuraProjectId}`),
-    //   network_id: 5,       // Goerli's network id
-    //   chain_id: 5,         // Goerli's chain id
-    //   gas: 5500000,        // Gas limit used for deploys.
-    //   confirmations: 2,    // # of confirmations to wait between deployments. (default: 0)
-    //   timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-    //   skipDryRun: true     // Skip dry run before migrations? (default: false for public nets)
-    // },
+    goerli: {
+      provider: () => new HDWalletProvider(mnemonic, `https://goerli.infura.io/v3/${infuraProjectId}`),
+      network_id: 5,       // Goerli network id
+      chain_id: 5,         // Goerli chain id
+      gas: 5500000,        // Gas limit used for deploys.
+      confirmations: 2,    // # of confirmations to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true,    // Skip dry run before migrations? (default: false for public nets)
+      networkCheckTimeout: 300_000 // 5min // default: 5_000; 5s
+    },
     //
     // Useful for private networks
     // private: {
@@ -100,7 +101,7 @@ module.exports = {
   },
 
   // Truffle DB is currently disabled by default; to enable it, change enabled:
-  // false to enabled: true. The default storage location can also be
+  // false, to enable: true. The default storage location can also be
   // overridden by specifying the adapter settings, as shown in the commented code below.
   //
   // NOTE: It is not possible to migrate your contracts to truffle DB and you should
@@ -119,7 +120,7 @@ module.exports = {
   //     }
   //   }
   // },
-  
+
   // Configure your plugins
   plugins: ['truffle-plugin-verify'],
   api_keys: {

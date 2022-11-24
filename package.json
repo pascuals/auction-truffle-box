@@ -1,6 +1,12 @@
 {
   "name": "auction-truffle-box",
   "scripts": {
-    "bid-script": "truffle exec scripts/bid.js"
+    "bid-script": "truffle exec scripts/bid.js",
+    "truffle:compile": "truffle compile",
+    "truffle:migrate:goerli": "truffle migrate --network goerli"
+  },
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.1.1",
+    "dotenv": "^16.0.3"
   }
 }
